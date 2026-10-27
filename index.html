@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sancks Hub</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #e0e0e8;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(120, 80, 255, 0.15), transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(0, 200, 180, 0.1), transparent 60%),
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+  }
+
+  header {
+    text-align: center;
+    padding: 40px 0 28px;
+  }
+  header h1 {
+    font-size: clamp(28px, 6vw, 44px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #a78bfa, #22d3ee 70%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 40px rgba(167, 139, 250, 0.3);
+  }
+  header p {
+    margin-top: 8px;
+    color: #6b6b80;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 6px;
+    margin-bottom: 28px;
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 12px;
+    z-index: 10;
+  }
+  .tabs button {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    border-radius: 11px;
+    background: transparent;
+    color: #8888a0;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .22s ease;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .tabs button:hover { color: #c8c8e0; }
+  .tabs button.active {
+    background: linear-gradient(135deg, rgba(167,139,250,0.25), rgba(34,211,238,0.18));
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(167,139,250,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .panel { display: none; animation: fade .3s ease; }
+  .panel.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
+
+  .card {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(8px);
+    transition: border-color .2s, transform .2s;
+  }
+  .card:hover {
+    border-color: rgba(167,139,250,0.35);
+    transform: translateY(-2px);
+  }
+  .card h3 {
+    font-size: 18px;
+    margin-bottom: 6px;
+    color: #fff;
+  }
+  .card .desc {
+    font-size: 14px;
+    color: #8888a0;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  /* общий стиль для аватарок в карточках каналов */
+  .channel-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.2), 0 8px 24px rgba(0,0,0,0.5);
+    background: #1a1a24;
+  }
+  .channel-avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(100%) contrast(1.1);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    box-shadow: 0 6px 24px rgba(124, 58, 237, 0.35);
+    transition: transform .18s, box-shadow .18s;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(124, 58, 237, 0.5);
+  }
+  .btn.secondary {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: none;
+  }
+  .btn.secondary:hover {
+    background: rgba(255,255,255,0.14);
+    box-shadow: none;
+  }
+
+  /* профиль */
+  .profile-card { text-align: center; padding: 40px 24px; }
+  .avatar {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    overflow: hidden;
+    box-shadow: 0 0 0 4px rgba(124,58,237,0.2), 0 12px 40px rgba(124,58,237,0.4);
+    background: #1a1a24;
+  }
+  .avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(100%) contrast(1.1);
+  }
+  .profile-card .handle {
+    font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px;
+  }
+  .profile-card .sub { color: #8888a0; font-size: 14px; margin-bottom: 24px; }
+
+  .service {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 22px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    transition: border-color .2s;
+  }
+  .service:hover { border-color: rgba(34,211,238,0.35); }
+  .service .name { font-weight: 600; color: #fff; font-size: 15px; }
+  .service .price {
+    font-weight: 800;
+    font-size: 16px;
+    color: #22d3ee;
+    white-space: nowrap;
+  }
+  .service .buy {
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    white-space: nowrap;
+    transition: transform .15s;
+  }
+  .service .buy:hover { transform: scale(1.05); }
+
+  .service-left { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .service-right { display: flex; align-items: center; gap: 14px; }
+
+  footer {
+    text-align: center;
+    color: #4a4a5a;
+    font-size: 12px;
+    margin-top: 48px;
+    letter-spacing: 1px;
+  }
+
+  @media (max-width: 520px) {
+    .tabs button { font-size: 12px; padding: 10px 4px; }
+    .service { flex-direction: column; align-items: flex-start; }
+    .service-right { width: 100%; justify-content: space-between; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Sancks Hub</h1>
+    <p>твой проводник в тень</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="active" data-tab="profile">Профиль</button>
+    <button data-tab="channels">Каналы</button>
+    <button data-tab="services">Услуги</button>
+  </nav>
+
+  <!-- ПРОФИЛЬ -->
+  <section id="profile" class="panel active">
+    <div class="card profile-card">
+      <div class="avatar">
+        <img src="avatar.jpg" alt="@tgsancks">
+      </div>
+      <div class="handle">@tgsancks</div>
+      <div class="sub">Личные сообщения · связь</div>
+      <a class="btn" href="https://t.me/tgsancks" target="_blank" rel="noopener">
+        Написать в ЛС →
+      </a>
+    </div>
+  </section>
+
+  <!-- КАНАЛЫ -->
+  <section id="channels" class="panel">
+    <div class="card">
+      <div class="channel-avatar">
+        <img src="channel.jpg" alt="Anonymous Living">
+      </div>
+      <h3>Anonymous Living</h3>
+      <div class="desc">Основной канал. Тишина, наблюдение, разбор.</div>
+      <a class="btn" href="https://t.me/+XEeZ-0-kQxUyMWMy" target="_blank" rel="noopener">
+        Перейти в канал →
+      </a>
+    </div>
+    <div class="card">
+      <h3>Вайб музыка от ssanckssiss</h3>
+      <div class="desc">Атмосферные подборки. Звук под настроение.</div>
+      <a class="btn secondary" href="https://t.me/ssanckssiss" target="_blank" rel="noopener">
+        Слушать →
+      </a>
+    </div>
+  </section>
+
+  <!-- УСЛУГИ -->
+  <section id="services" class="panel">
+    <div class="service">
+      <div class="service-left"><span class="name">Сват</span></div>
+      <div class="service-right">
+        <span class="price">7$</span>
+        <a class="buy" href="https://t.me/tgsancks" target="_blank" rel="noopener">Купить</a>
+      </div>
+    </div>
+    <div class="service">
+      <div class="service-left"><span class="name">Осинт-разведка</span></div>
+      <div class="service-right">
+        <span class="price">10$</span>
+        <a class="buy" href="https://t.me/tgsancks" target="_blank" rel="noopener">Купить</a>
+      </div>
+    </div>
+    <div class="service">
+      <div class="service-left"><span class="name">Обучение</span></div>
+      <div class="service-right">
+        <span class="price">20$</span>
+        <a class="buy" href="https://t.me/tgsancks" target="_blank" rel="noopener">Купить</a>
+      </div>
+    </div>
+    <div class="service">
+      <div class="service-left"><span class="name">Приватка по сносу</span></div>
+      <div class="service-right">
+        <span class="price">15$</span>
+        <a class="buy" href="https://t.me/tgsancks" target="_blank" rel="noopener">Купить</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>© SANCKS HUB — 2026</footer>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tabs button');
+  const panels = document.querySelectorAll('.panel');
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
